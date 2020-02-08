@@ -49,15 +49,27 @@ public class HashMapConflicTest {
 
     public static void main(String[] args) {
         Country india = new Country("India", 1000);
+
         Country japan = new Country("Japan", 10000);
+        Country japan2 = new Country("Japan", 10001);
+        Country japan3 = new Country("Japan_3", 10002);
+
         Country france = new Country("France", 2000);
         Country russia = new Country("Russia", 20000);
 
         HashMap<Country, String> countryCapitalMap = new HashMap<Country, String>();
         countryCapitalMap.put(india, "Delhi");
+
         countryCapitalMap.put(japan, "Tokyo");
+        countryCapitalMap.put(japan2, "Tokyo2");//由于japan.equals(japan2)==true, 所以将第一个japan替换了
+        countryCapitalMap.put(japan3, "Tokyo3");
+
         countryCapitalMap.put(france, "Paris");
         countryCapitalMap.put(russia, "Moscow");
+
+        String c = countryCapitalMap.get(japan);// 由于japan.equals(japan2)==true, 所以这里返回的值为japan2
+        String d = countryCapitalMap.get(japan2);//同上，从链表中 (根据条件hash相等、引用地址不相等，equals相等) 查找得出第一个japan实例的这个key,是因为equals里错误判断
+        String e = countryCapitalMap.get(japan3);//
 
         Iterator<Country> countryCapitalIter = countryCapitalMap.keySet().iterator();// put debug point at this line
         while (countryCapitalIter.hasNext()) {
@@ -65,6 +77,8 @@ public class HashMapConflicTest {
             String capital = countryCapitalMap.get(countryObj);
             System.out.println(countryObj.getName() + "----" + capital);
         }
+
+
 
     }
 
