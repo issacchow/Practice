@@ -3,9 +3,12 @@ package com.isc;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 本代码主要用于审视线程在各种情况下的状态
+ */
 public class Main {
 
-    //主要测试线程终止后在池中或池外的状态，状态通过jstack 来查看
+
     public static void main(String[] args) throws InterruptedException {
 
         Executor executor = new ThreadPoolExecutor(2, 5,
