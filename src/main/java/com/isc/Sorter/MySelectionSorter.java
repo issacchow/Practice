@@ -1,5 +1,8 @@
 package com.isc.Sorter;
 
+/**
+ * 选择排序
+ */
 public class MySelectionSorter extends SorterSupport implements Sorter {
 
     @Override

@@ -18,6 +18,17 @@ public class SorterSupport {
         System.out.println();
     }
 
+    void logln(){
+        pln();
+    }
+
+    void logln(String content){
+        pln(content);
+    }
+
+    void pln(){
+        System.out.println();
+    }
     void pln(String content){
         System.out.println(content);
     }

@@ -1,9 +1,6 @@
 package com.isc;
 
-import com.isc.Sorter.BubbleSorter;
-import com.isc.Sorter.MyBubbleSorter;
-import com.isc.Sorter.MySelectionSorter;
-import com.isc.Sorter.SelectionSorter;
+import com.isc.Sorter.*;
 
 import java.util.Random;
 
@@ -26,8 +23,12 @@ public class Main {
 //        new MyBubbleSorter().sort(arr);
 //        new BubbleSorter().sort(arr);
 
+        // 选择排序
+//        new MySelectionSorter().sort(arr);
+
         // 插入排序
-        new MySelectionSorter().sort(arr);
+        new MyInsertSorter().sort(arr);
+
 
         System.out.println();
         System.out.println();
