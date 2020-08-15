@@ -1,6 +1,7 @@
 package com.isc.Sorter;
 
 public class MyBubbleSorter extends SorterSupport implements Sorter{
+
     @Override
     public void sort(int[] arr) {
         int curValue, nextValue, curPos, nextPos;
@@ -12,8 +13,8 @@ public class MyBubbleSorter extends SorterSupport implements Sorter{
             // 当前要冒泡的值
             curValue = arr[i];
             curPos = i;
-            System.out.println("cur value:" + curValue);
-            System.out.println("before sort:");
+            pln("cur value:" + curValue);
+            pln("before sort:");
             dumpArr(arr);
 
             hasBubble = false;
@@ -43,7 +44,7 @@ public class MyBubbleSorter extends SorterSupport implements Sorter{
                 i++;
             }
 
-            System.out.println("after sort:");
+            pln("after sort:");
             dumpArr(arr);
         }
     }

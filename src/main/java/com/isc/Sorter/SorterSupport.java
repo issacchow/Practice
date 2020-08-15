@@ -18,6 +18,10 @@ public class SorterSupport {
         System.out.println();
     }
 
+    void pln(String content){
+        System.out.println(content);
+    }
+
     int[] randomArray() {
         Random random = new Random();
         int[] arr = new int[100000];
