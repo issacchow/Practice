@@ -1,5 +1,8 @@
 package com.isc.Sorter;
 
+/**
+ * 冒泡排序(有问题版本)
+ */
 public class MyBubbleSorter extends SorterSupport implements Sorter{
 
     @Override
