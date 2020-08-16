@@ -1,4 +1,7 @@
-package com.isc.Sorter;
+package com.isc.Sorter.my;
+
+import com.isc.Sorter.Sorter;
+import com.isc.Sorter.SorterSupport;
 
 /**
  * 选择排序

@@ -1,9 +1,12 @@
-package com.isc.Sorter;
+package com.isc.Sorter.my;
+
+import com.isc.Sorter.Sorter;
+import com.isc.Sorter.SorterSupport;
 
 /**
  * 冒泡排序(有问题版本)
  */
-public class MyBubbleSorter extends SorterSupport implements Sorter{
+public class MyBubbleSorter extends SorterSupport implements Sorter {
 
     @Override
     public void sort(int[] arr) {

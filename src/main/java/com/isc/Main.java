@@ -1,6 +1,6 @@
 package com.isc;
 
-import com.isc.Sorter.*;
+import com.isc.Sorter.my.MyInsertionSorter;
 
 import java.util.Random;
 
@@ -27,8 +27,8 @@ public class Main {
 //        new MySelectionSorter().sort(arr);
 
         // 插入排序
-        new MyInsertSorter().sort(arr);
-
+        new MyInsertionSorter().sort(arr);
+//        new InsertionSort().sort(arr);
 
         System.out.println();
         System.out.println();
@@ -51,7 +51,7 @@ public class Main {
 
     static int[] randomArray() {
         Random random = new Random();
-        int[] arr = new int[100000];
+        int[] arr = new int[2000];
         for (int i = 0; i < arr.length; i++) {
             arr[i] = random.nextInt(100);
         }

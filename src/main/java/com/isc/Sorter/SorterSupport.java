@@ -4,13 +4,13 @@ import java.util.Random;
 
 public class SorterSupport {
 
-    void swap(int[] arr, int a, int b) {
+    protected void swap(int[] arr, int a, int b) {
         int temp = arr[a];
         arr[a] = arr[b];
         arr[b] = temp;
     }
 
-    void dumpArr(int[] arr) {
+    protected void dumpArr(int[] arr) {
 
         for (int i = 0; i < arr.length; i++) {
             System.out.print(arr[i] + " ");
@@ -18,19 +18,20 @@ public class SorterSupport {
         System.out.println();
     }
 
-    void logln(){
+    protected void logln(){
         pln();
     }
 
-    void logln(String content){
+    protected void logln(Object content){
         pln(content);
     }
 
-    void pln(){
-//        System.out.println();
+    protected void pln(){
+        System.out.println();
     }
-    void pln(String content){
-//        System.out.println(content);
+
+    protected void pln(Object content){
+        System.out.println(content);
     }
 
     int[] randomArray() {
