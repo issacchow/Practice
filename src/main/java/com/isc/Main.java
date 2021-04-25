@@ -11,10 +11,10 @@ public class Main {
 
     public static void main(String[] args) {
 //        int[] arr = randomArray();
-//        int[] arr = {1, 10, 3, 3, 8, 2, 3, 2, 2};
+        int[] arr = {1, 10, 3, 3, 8, 2, 3, 2, 2};
 
 //        int[] arr = {3, 8, 10, 3};
-        int[] arr = {8 ,10 ,3,3 };
+//        int[] arr = {8 ,10 ,3,3 };
 
 
         int[] copyArr = new int[arr.length];

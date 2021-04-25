@@ -13,23 +13,23 @@ public class SorterSupport {
     protected void dumpArr(int[] arr) {
 
         for (int i = 0; i < arr.length; i++) {
-            //System.out.print(arr[i] + " ");
+            System.out.print(arr[i] + " ");
         }
-        //System.out.println();
+        System.out.println();
     }
 
 
     protected void dumpArr(int[] arr,int start,int end) {
 
         for (int i = start; i <= end; i++) {
-            //System.out.print(arr[i] + " ");
+            System.out.print(arr[i] + " ");
         }
-        //System.out.println();
+        System.out.println();
     }
 
 
     protected void log(String format, Object... args) {
-        //System.out.printf(format, args);
+        System.out.printf(format, args);
     }
 
     protected void logln() {
@@ -41,11 +41,11 @@ public class SorterSupport {
     }
 
     protected void pln() {
-        //System.out.println();
+        System.out.println();
     }
 
     protected void pln(Object content) {
-        //System.out.println(content);
+        System.out.println(content);
     }
 
     protected void print(Object content) {

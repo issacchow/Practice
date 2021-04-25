@@ -6,8 +6,8 @@ import com.isc.Sorter.SorterSupport;
 /**
  * 归并排序(分治算法)
  * 思路: 通过二分法，将排序的原始数组分成两个阵型的数组，然后每个阵型依次从第一个派出一个代表出来进行PK, PK赢了就排队到名次队列中。
- *      但前提下，两个阵型内部本身就已经排序好，意思是两边数组都进一步再细分很多个数组，直到出现最小数组(即长度为2),然后再比较两个元素
- *
+ * 但前提下，两个阵型内部本身就已经排序好，意思是两边数组都进一步再细分很多个数组，直到出现最小数组(即长度为2),然后再比较两个元素
+ * <p>
  * 思路2: 类似选举，从底层一直选举到高层,即从最小圈子里排序，然后再往上一层与其他同等大小的圈子进行选举
  * <p>
  * 注意:
@@ -84,9 +84,6 @@ public class MyMergeSort extends SorterSupport implements Sorter {
 //        dumpArr(arr,rightPtr,rangeEnd);
 
 
-
-
-
         /** 分别将左右两边数组进一步细分排序 **/
 
         // 计算左边数组的中间位置
@@ -103,6 +100,8 @@ public class MyMergeSort extends SorterSupport implements Sorter {
 
         /** 大组排序 **/
 
+        logln();
+        log(" merge from %s to %s", leftPtr, rightPtr);
 
         int[] mergeArr = new int[LEN_OF_RANGE];
         int mergeArrPtr = 0;
@@ -131,16 +130,15 @@ public class MyMergeSort extends SorterSupport implements Sorter {
 
         logln();
         logln();
-        logln("merge array:");
+//        logln("merge array:");
 //        dumpArr(mergeArr);
 
         // 到此为止已经将当前数组，按照二分法分成两部分，并且排序
         System.arraycopy(mergeArr, 0, arr, rangeStart, LEN_OF_RANGE);
 
         logln();
-        logln("merge finish:");
+//        logln("merge finish:");
 //        dumpArr(arr);
-
 
 
     }
