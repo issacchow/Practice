@@ -15,6 +15,21 @@ import java.util.List;
  * <p>
  * 1. 插入的节点如果是小于或等于父级节点值，则成为父级字节点的左节点
  * 2. 插入的节点如果是大于父级节点，则成为父级字节点的右节点
+ *
+ *
+ * <p>
+ * 重复数据: 即数据冲突，通常是key冲突。而key冲突是指两个不同的key 所hash的值是一样的。
+ * 对于重复数据(数据冲突)的处理方式有两种:
+ *
+ * 1. 使用兼容方式解决冲突(与解决散列 key冲突的思路一样)
+ *    插入重复数据: 将相同值的数据存储在同一个节点上(比如两个key一样的对象)，使用链表或数组存储
+ *    查找数据: 按正常的数值匹配方式进行查找
+ *    删除数据: 整个节点删除
+ *
+ * 2. 链表法:
+ *    插入重复数据: 将同一个节点以链表变成一个桶，并将重复的数据追加到链表后。意思是同一个hash值的不同key 存储于同一个链表上。
+ *    查找数据: 根据hash(key)值找到节点，并遍历该节点的链表结构上进行key值比对，如果比对成功则返回。
+ *
  */
 public class BinarySearchTree<T extends Comparable> {
 
@@ -93,6 +108,8 @@ public class BinarySearchTree<T extends Comparable> {
         return null;
 
     }
+
+
 
 
     public Node<T> delete(T data) {
@@ -223,13 +240,7 @@ public class BinarySearchTree<T extends Comparable> {
         return null;
     }
 
-    private Node<T> minNode(Node node) {
-        Node p = node;
-        while (p.getLeft() != null) {
-            p = p.getLeft();
-        }
-        return p;
-    }
+
 
     /**
      * 查找所有匹配的节点
