@@ -2,6 +2,8 @@ package com.isc;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -29,6 +31,22 @@ import java.nio.file.StandardOpenOption;
 public class ZeroCopy {
 
 
+    public void readFileByCPU(String filePath) throws IOException {
+        File file = new File(filePath);
+        FileReader reader = new FileReader(file);
+        char[] buffer = new char[1024];
+        int readCount = -1;
+        StringBuilder builder = new StringBuilder();
+        Charset utf8 = Charset.forName("utf-8");
+
+        while ((readCount = reader.read(buffer)) > 0) {
+            builder.append(new String(buffer));
+        }
+
+        System.out.println(buffer);
+    }
+
+
     public void ReadFileByDMA(String filePath) throws IOException {
 
         FileChannel fileChannel = FileChannel.open(Paths.get(filePath), StandardOpenOption.READ);
@@ -49,11 +67,15 @@ public class ZeroCopy {
             buffer.clear();
         }
 
+
+        fileChannel.close();
+
     }
 
 
     /**
      * 零拷贝将文件发送到网络接口上(未验证过程是否全部都走DMA)
+     *
      * @param filePath
      * @param host
      * @param port
@@ -75,6 +97,7 @@ public class ZeroCopy {
 
     /**
      * 零拷贝接收网络文件(未验证过程是否全部都走DMA)
+     *
      * @param saveFilePath
      * @param listenPort
      * @throws IOException
@@ -88,7 +111,6 @@ public class ZeroCopy {
         // 阻塞
         server.configureBlocking(true);
         SocketChannel conn = server.accept();
-
 
 
         System.out.println("accepted new connection");
