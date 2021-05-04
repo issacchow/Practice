@@ -50,7 +50,16 @@
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
+          <version>3.1.2</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addClasspath>true</addClasspath>    //指定添加项目中使用的外部jar的classpath项
+                <classpathPrefix>lib/</classpathPrefix> //指定外部jar所在的路径，添加的classpath为 【路径】/jar文件名，Maven自动解析文件名，使用本项目生成的jar包时，当前目录下有lib文件夹，lib文件夹中有本项目使用的外部jar文件即可
+                <mainClass>com.isc.Main</mainClass>    //指定本项目jar包的Main-Class
+              </manifest>
+            </archive>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
