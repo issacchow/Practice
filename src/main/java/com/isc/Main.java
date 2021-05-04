@@ -18,7 +18,7 @@ public class Main {
         tree.insert(13, 18, 34, 58);
         tree.insert(15, 17, 25, 51, 66);
         //重复节点 55
-        tree.insert(19, 27, 55,55);
+        tree.insert(19, 27, 55, 55);
         tree.print();
 
         // 查找第一个匹配的节点
@@ -40,6 +40,18 @@ public class Main {
         tree.delete(18);
         tree.delete(55);
         tree.print();
+
+        /**
+         * 退化树的形成演示
+         */
+        BinarySearchTree<Integer> disablizeTree = new BinarySearchTree<>();
+        disablizeTree.insert(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+        disablizeTree.print();
+
+
+        BinarySearchTree<Integer> disablizeTree2 = new BinarySearchTree<>();
+        disablizeTree2.insert(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        disablizeTree2.print();
 
     }
 
