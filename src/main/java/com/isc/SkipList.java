@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class SkipList<T extends Comparable> extends LinkedList<T> {
 
-    private List<LinkedList<T>> listIndexes = new java.util.LinkedList<>();
+    private List<LinkedList<T>> listCache = new java.util.LinkedList<>();
 
 
     public SkipList() {
@@ -43,15 +43,15 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
     public Node<T> find(T data) {
 
         // 从最上层索引开始查找
-        if (listIndexes.size() == 0) {
+        if (listCache.size() == 0) {
             // 直接从链表查找....
             return super.find(data);
         }
 
 
         // 从索引层查找
-//        for (int i = listIndexes.size() - 1; i > 0; i--) {
-//            LinkedList index = listIndexes.get(i);
+//        for (int i = listCache.size() - 1; i > 0; i--) {
+//            LinkedList index = listCache.get(i);
 //
 //
 //
@@ -97,8 +97,8 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
 //        return null;
 
 
-        int cacheIndex = listIndexes.size() - 1;
-        LinkedList indexLayer = listIndexes.get(cacheIndex--);
+        int cacheIndex = listCache.size() - 1;
+        LinkedList indexLayer = listCache.get(cacheIndex--);
         /**
          * 查找区间开始与结束的节点
          */
@@ -108,10 +108,11 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
 
         int findCount = 0;
 
-        while (end != null && indexLayer != null) {
+        while (end != null) {
 
             findCount++;
-            System.out.println("find count:" + findCount + " cache index:" + cacheIndex);
+            System.out.println();
+            System.out.printf("find count:%s ,  find [%s] from %s to %s , in cache layer: %s", findCount, data, start.getData(), end.getData(), cacheIndex);
 
             int compare = end.getData().compareTo(data);
 
@@ -132,8 +133,18 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
                 // 找到比当前数据大的节点,即找到某一个区间
                 // 展开该区间，从下层索引继续查找
                 start = start.getDown();
-                end = start;
-                //indexLayer = listIndexes.get(cacheIndex--);
+
+                if(start!=null) {
+                    // 原本只有 end = start, 但为了减少一次循环，这里向后进一步遍历
+                    end = start.getNext();
+                }else{
+                    end = start;
+                }
+
+                // 记录跳到下层的层数
+                if (start != null) {
+                    cacheIndex--;
+                }
                 continue;
             }
 
@@ -143,15 +154,27 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
             end = end.getNext();
 
             if (end == null) {
-                // 当前索引层找不到，从下层查找
-                if(cacheIndex==0){
-                    // 已经没有下层，直接返回null
-                    return null;
+                // 当前索引层找不到比目标数据要大的数据(即当前缓存层找到最后一个点 <= 目标数值)
+                // 从下层查找
+
+                // 比如查找100,在缓存层:
+                // 1, 2, 3, ...,99
+                // 中找不到比100大的点，则使用最后一个点向下层搜索
+
+
+                start = start.getDown();
+
+                if(start!=null) {
+                    // 原本只有 end = start, 但为了减少一次循环，这里向后进一步遍历
+                    end = start.getNext();
+                }else{
+                    end = start;
                 }
 
-                indexLayer = listIndexes.get(cacheIndex--);
-                start = indexLayer.getFirst();
-                end = start;
+                // 记录跳到下层的层数
+                if (start != null) {
+                    cacheIndex--;
+                }
             }
 
 
@@ -165,7 +188,7 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
     public void printAllIndexes(boolean printDetails) {
         System.out.println("print all indexes...");
         System.out.println();
-        Iterator<LinkedList<T>> iterator = listIndexes.iterator();
+        Iterator<LinkedList<T>> iterator = listCache.iterator();
         int depth = 0;
         while (iterator.hasNext()) {
             depth++;
@@ -191,7 +214,7 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
     public void rebuildIndex(int step) {
 
         System.out.println("rebuild index");
-        listIndexes.clear();
+        listCache.clear();
 
 
         // 下层索引
@@ -219,7 +242,7 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
                 upNode.setDown(downNode);
             }
 
-            listIndexes.add(upList);
+            listCache.add(upList);
 
             downIndex = upList;
             size = downIndex.getSize();

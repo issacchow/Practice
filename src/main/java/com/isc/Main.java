@@ -1,13 +1,14 @@
 package com.isc;
 
 /**
- * 还没完成查找，插入、删除
+ * 完成查找
+ * 还没完成插入、删除
  */
 public class Main {
 
     public static void main(String[] args) {
         SkipList<Integer> list = new SkipList();
-        int len = 1000;
+        int len = 100000;
         for (int i = 0; i < len; i++) {
             list.insert(i);
         }
@@ -28,7 +29,8 @@ public class Main {
 
         System.out.println();
         System.out.println("start find node:");
-        LinkedList<Integer>.Node<Integer> node = list.find(999);
+        LinkedList<Integer>.Node<Integer> node = list.find(90001);
+        System.out.println();
         System.out.println(node.toString());
 
     }
