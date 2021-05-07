@@ -3,7 +3,7 @@ package com.isc;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public class LinkedList<T extends  Comparable> {
+public class LinkedList<T extends Comparable> {
 
     private int size = 0;
 
@@ -47,14 +47,22 @@ public class LinkedList<T extends  Comparable> {
         return node;
     }
 
-    public Node<T> find(T data){
+    public Node<T> find(T data) {
+
+        System.out.println();
+        System.out.println("start find :" + data);
         Node<T> node = first;
+        int findCount = 0;
         while (node != null) {
+            findCount++;
             if (node.getData().compareTo(data) == 0) {
+                System.out.println("data found, find count:" + findCount);
                 return node;
             }
             node = node.getNext();
         }
+
+        System.out.println("data not found, find count:" + findCount);
         return null;
     }
 
@@ -143,6 +151,11 @@ public class LinkedList<T extends  Comparable> {
 
         public Node(T data) {
             this.data = data;
+        }
+
+        @Override
+        public String toString() {
+            return "(node) " + data + " address: " + super.toString();
         }
     }
 

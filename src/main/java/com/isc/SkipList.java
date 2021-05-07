@@ -39,62 +39,13 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
      * @param data
      * @return
      */
-    @Override
-    public Node<T> find(T data) {
+    public Node<T> findFromCache(T data) {
 
         // 从最上层索引开始查找
         if (listCache.size() == 0) {
             // 直接从链表查找....
             return super.find(data);
         }
-
-
-        // 从索引层查找
-//        for (int i = listCache.size() - 1; i > 0; i--) {
-//            LinkedList index = listCache.get(i);
-//
-//
-//
-//
-//
-//
-//            // 查找到比查找数据上限边界节点
-//            Iterator it = index.iterator(1);
-//
-//            Node<T> prev = null;
-//
-//            while(it.hasNext()){
-//                Node<T> next = (Node<T>)it.next();
-//
-//                int compare = next.getData().compareTo(data);
-//
-//                if(compare==0){
-//                    // 找到索引节点
-//
-//                    // 往下层找到原始节点
-//                    Node down = next;
-//                    while(down!=null){
-//                        down = down.getDown();
-//                    }
-//                    return down;
-//                }
-//
-//                if(compare>0){
-//                    // 找到比当前数据大的节点,即找到某一个区间
-//                    // 展开该区间，从下层索引继续查找
-//
-//                    // prev 为区间开始位置
-//                    // next 为区间结束位置
-//                    Node start = prev;
-//                    Node end = next;
-//
-//
-//                }
-//                prev = next;
-//            }
-//        }
-//
-//        return null;
 
 
         int cacheIndex = listCache.size() - 1;
@@ -112,7 +63,7 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
 
             findCount++;
             System.out.println();
-            System.out.printf("find count:%s ,  find [%s] from %s to %s , in cache layer: %s", findCount, data, start.getData(), end.getData(), cacheIndex);
+            System.out.printf("find count:%s ,  find [%s] from %s   , in cache layer: %s", findCount, data, end.getData(), cacheIndex);
 
             int compare = end.getData().compareTo(data);
 
@@ -134,10 +85,10 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
                 // 展开该区间，从下层索引继续查找
                 start = start.getDown();
 
-                if(start!=null) {
+                if (start != null && start.getNext() != null) {
                     // 原本只有 end = start, 但为了减少一次循环，这里向后进一步遍历
                     end = start.getNext();
-                }else{
+                } else {
                     end = start;
                 }
 
@@ -164,10 +115,10 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
 
                 start = start.getDown();
 
-                if(start!=null) {
+                if (start != null && start.getNext() != null) {
                     // 原本只有 end = start, 但为了减少一次循环，这里向后进一步遍历
                     end = start.getNext();
-                }else{
+                } else {
                     end = start;
                 }
 
@@ -176,10 +127,10 @@ public class SkipList<T extends Comparable> extends LinkedList<T> {
                     cacheIndex--;
                 }
             }
-
-
         }
 
+        System.out.println();
+        System.out.println("data not found:" + data);
 
         return null;
 

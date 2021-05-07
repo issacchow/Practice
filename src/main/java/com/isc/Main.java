@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) {
         SkipList<Integer> list = new SkipList();
         int len = 100000;
-        for (int i = 0; i < len; i++) {
+        for (int i = 1; i < len; i++) {
             list.insert(i);
         }
 
@@ -29,9 +29,30 @@ public class Main {
 
         System.out.println();
         System.out.println("start find node:");
-        LinkedList<Integer>.Node<Integer> node = list.find(90001);
+        // 跳表搜索
+        LinkedList<Integer>.Node<Integer> node;
+        node = list.findFromCache(99998);
         System.out.println();
         System.out.println(node.toString());
+
+
+        node = list.findFromCache(5000);
+        System.out.println();
+        System.out.println(node.toString());
+
+
+        node = list.findFromCache(1);
+        System.out.println();
+        System.out.println(node.toString());
+
+
+        node = list.findFromCache(2000000);
+        System.out.println();
+        System.out.println(node==null);
+
+        // 直接链表搜索
+        LinkedList<Integer>.Node<Integer> node2 = list.find(99998);
+        System.out.println(node2.toString());
 
     }
 
