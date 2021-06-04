@@ -22,3 +22,4 @@ logs-testing/*
 /log.dir_IS_UNDEFINED
 /hsql
 /temp
+/logs
