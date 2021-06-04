@@ -142,6 +142,22 @@
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
             </plugins>
+
         </pluginManagement>
+
+
+
+        <resources>
+
+            <!--配置生成xml文件-->
+            <resource>
+                <filtering>false</filtering>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+
     </build>
 </project>
