@@ -8,4 +8,10 @@
     SELECT * FROM user
     </select>
 
+
+    <select id="selectPage" resultType="com.isc.dto.UserDto">
+    SELECT * FROM user limit ${page},${size}
+    </select>
+
+
 </mapper>

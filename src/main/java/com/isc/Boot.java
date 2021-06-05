@@ -102,4 +102,11 @@ public class Boot {
     }
 
 
+    @RequestMapping("search2")
+    public List<UserDto> search2(@RequestBody UserSearchRequest request){
+
+        return userMapper.selectPage(request.getPage(),10);
+    }
+
+
 }
