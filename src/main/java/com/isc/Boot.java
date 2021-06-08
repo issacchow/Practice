@@ -38,13 +38,12 @@ public class Boot {
     }
 
     public static void main(String[] args) {
-
         SpringApplication.run(Boot.class);
     }
 
 
 
-
+    /*** 业务代码在下面 ***/
 
 
 
@@ -96,8 +95,9 @@ public class Boot {
     public List<UserDto> search(@RequestBody UserSearchRequest request){
 
         Page<UserDto> pager = new Page<>(request.getPage(),10);
+        System.out.println("start :" + new Date());
         IPage<UserDto> result = userMapper.selectPageVo(pager);
-
+        System.out.println("end :"+ new Date());
         return result.getRecords();
     }
 

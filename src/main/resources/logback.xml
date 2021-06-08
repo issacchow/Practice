@@ -28,7 +28,7 @@
 
 
 
-	<!--<logger name="com.isc.mapper" level="DEBUG"/>-->
+	<logger name="com.isc.mapper" level="DEBUG"/>
 
 	<root level="INFO">
 		<appender-ref ref="CONSOLE"/>
