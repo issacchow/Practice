@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.isc.dto.UserDto;
+import com.isc.mapper.OrderMapper;
 import com.isc.mapper.UserMapper;
 import com.isc.request.UserSearchRequest;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +40,7 @@ public class Boot {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(Boot.class);
+        ConfigurableApplicationContext ctx = SpringApplication.run(Boot.class);
     }
 
 
@@ -72,6 +74,9 @@ public class Boot {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private OrderMapper orderMapper;
+
     @RequestMapping("create")
     public UserDto createUser(@RequestBody UserDto user) {
 
@@ -93,6 +98,8 @@ public class Boot {
 
     @RequestMapping("search")
     public List<UserDto> search(@RequestBody UserSearchRequest request){
+
+        userMapper.toString();
 
         Page<UserDto> pager = new Page<>(request.getPage(),10);
         System.out.println("start :" + new Date());
