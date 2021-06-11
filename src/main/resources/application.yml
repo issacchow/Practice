@@ -1,3 +1,4 @@
+
 system:
   name: Practice
   charset: UTF-8
@@ -26,4 +27,4 @@ spring:
       write-dates-as-timestamps: false
     property-naming-strategy: SNAKE_CASE
 
-
+debug: false
