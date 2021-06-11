@@ -2,6 +2,10 @@ package com.isc;
 
 import java.io.IOException;
 
+/**
+ * 本示例主要用于调试java.nio包下关于channel的使用,尤其是【零拷贝】的应用。
+ * 包含了一些使用 CPU 和 DMA 搬数据方式的例子
+ */
 public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -16,6 +20,7 @@ public class Main {
             return;
         }
 
+        // 直接读取文件
         if (mode.equals("readFileByCPU")) {
             System.out.println("readFileByCPU");
             readFileByCPU(args);
