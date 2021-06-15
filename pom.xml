@@ -63,18 +63,27 @@
 
         <!--数据库:Mybatis + Druid-->
 
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
-            <version>1.1.10</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.alibaba</groupId>-->
+            <!--<artifactId>druid-spring-boot-starter</artifactId>-->
+            <!--<version>1.1.10</version>-->
+        <!--</dependency>-->
 
-        <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.mybatis.spring.boot</groupId>-->
+            <!--<artifactId>mybatis-spring-boot-starter</artifactId>-->
+            <!--<version>2.0.1</version>-->
+        <!--</dependency>-->
 
+        <!--
+       MyBatis插件: Mybatis Plus(MP)
+       功能: 提供基类Mapper(提供CRUD功能)、分页(不使用该分页插件)、多数据源
+       -->
+        <!--<dependency>-->
+        <!--<groupId>com.baomidou</groupId>-->
+        <!--<artifactId>mybatis-plus-boot-starter</artifactId>-->
+        <!--<version>3.1.0</version>-->
+        <!--</dependency>-->
 
         <!--JSON-->
         <dependency>
@@ -96,15 +105,7 @@
         </dependency>
 
 
-        <!--
-        MyBatis插件: Mybatis Plus(MP)
-        功能: 提供基类Mapper(提供CRUD功能)、分页(不使用该分页插件)、多数据源
-        -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.1.0</version>
-        </dependency>
+
 
         <!--postgres驱动
         <dependency>
