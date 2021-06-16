@@ -1,0 +1,80 @@
+@startuml
+
+title 【发送消息确认场景】时序图
+
+box 客户端( 消息生产端 )
+participant "用户态(客户端应用程序)" as u
+participant "内核态" as k
+participant "网卡" as interface
+end box
+
+box 服务端( Broker )
+participant "网卡" as interface2
+participant "内核态" as k2
+participant "用户态(服务端应用程序)" as u2
+end box
+
+
+
+autonumber
+u -> k: 调用send()
+u -> u: 阻塞
+k -> interface: 写入数据 Send-Q 队列
+k --> u: 唤醒阻塞
+u -> u: send函数返回发送字节数
+u -> u: 做其他事情
+
+note over of u
+这里只是写数据到网卡后立即返回，
+并没有等待 tcp协议的ack返回(即下面序号第7的过程)
+end note
+
+interface -> interface2: tcp传输数据(应用层请求): \r[flags=PSH, Seq=1, Len=100]\rdata: 【 ABC Request 】
+interface2 --> interface: tcp响应ack: \r[flags=ack, ACK=100+1+1, Seq=1]\rdata: (空)
+note over interface2
+注意: 到这里为止，
+只有传输层面上的ack,并没有从应用层上返回ack(即没有处理响应)
+下面才是应用层的ack(处理响应)
+end note
+
+|||
+|||
+
+interface2 -> k2: 发出中断信号
+k2 -> u2: 拷贝网卡数据
+u2 -> u2: 逻辑处理
+u2 -> k2: 发送响应(应用协议ACK), 调用send()
+u2 -> u2: 阻塞
+k2 -> interface2: 写入数据Send-Q队列
+k2 --> u2: 唤醒阻塞
+u2 -> u2: send函数返回发送字节数
+u2 -> u2: 做其他事情
+|||
+
+
+interface2 -> interface: tcp传输数据(应用层处理后的ACK/响应), [flags=PSH, Seq=1, Len=80 ] \rdata: 【 Response of ABC ,Http Code=200】
+interface --> interface2: tcp响应ack, [flags=ACK, Seq=101,ACK=1+80+1]\rdata: (空)
+
+
+|||
+|||
+|||
+
+note over interface
+有两个问题:
+
+1. 前面第1~6点的逻辑是否正确:
+   send函数调用并返回结果后，并不意味着数据成功投递到目标，只意味着数据发出去?
+   同理，这个问题也是服务端返回响应处理时的问题
+
+2. 假设第一个问题里，send函数返回后，并不担保数据已经成功投递到目标,
+   那么第18~19点，服务端返回处理响应给客户端，客户端也是有可能收不到
+   对于客户端来说，本来要通过【接收服务端处理响应】的方式确保消息发送成功的，
+   现在却收不到响应(应用层上的ACK)。
+
+   那么是否进入重试阶段? 如果进入重试并且成功，服务端是否总共收了两条请求写入的消息?
+
+end note
+
+
+@enduml
