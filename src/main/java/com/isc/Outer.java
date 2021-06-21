@@ -1,5 +1,13 @@
 package com.isc;
 
+
+/**
+ * 不带static 的内部类
+ * 该内部类可以看做成是Outer实例的一个部分
+ * 因为Inner类需要先实例化Outer后才能使用
+ * 并且Inner类的实例能直接引用Outer的私有方法或变量
+ *
+ */
 public class Outer {
 
     private int x = 0;

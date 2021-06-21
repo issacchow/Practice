@@ -37,6 +37,9 @@ public class Main {
         outer2.outerMethod();
 
 
+        // 由于可以直接实例化内部类, 所以不能调用宿主类私有方法和变量
+        OuterWithStaticInner.Inner staticInner = new OuterWithStaticInner.Inner();
+        staticInner.printOuterX();
 
     }
 
