@@ -1,7 +1,5 @@
 package com.isc.tcp;
 
-import javafx.util.Callback;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -19,7 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * 接受连接: 阻塞
  * 读数据: 阻塞
  */
-public class BIOTcpServer implements TcpServer {
+public class BIOTcpServer extends AbstractTcpServer {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(8);
     private BlockingQueue<Socket> connections = new LinkedBlockingQueue<>(1024);
@@ -110,8 +108,7 @@ public class BIOTcpServer implements TcpServer {
         }
     }
 
-    @Override
-    public void onRecevieMessage(Callback<Object, byte[]> callback) {
 
-    }
+
+
 }

@@ -1,7 +1,5 @@
 package com.isc.tcp;
 
-import javafx.util.Callback;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -40,7 +38,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * 按照以上逻辑:这种模型有点类似BIO,因为瓶颈在于IO线程接收数据,只有一条线程负责读数据，并分发数据给工作线程
  *
  */
-public class NioTcpServer implements TcpServer {
+public class NioTcpServer extends AbstractTcpServer {
 
 
     private final BlockingQueue<SocketChannelWrapper> clientConns = new LinkedBlockingQueue<>(100);
@@ -237,10 +235,7 @@ public class NioTcpServer implements TcpServer {
         }
     }
 
-    @Override
-    public void onRecevieMessage(Callback<Object, byte[]> callback) {
 
-    }
 
     /**
      * 为了附带数据的一个Runner

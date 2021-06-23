@@ -1,7 +1,5 @@
 package com.isc.tcp;
 
-import javafx.util.Callback;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -9,8 +7,11 @@ import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -24,16 +25,21 @@ import java.util.concurrent.Executors;
  * <p>
  * 详细参考  {@link SelectableChannel#validOps()}
  */
-public class MultiplexIOTcpServer implements TcpServer {
+public class MultiplexIOTcpServer extends AbstractTcpServer {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(8);
     private final Charset charset = Charset.forName("utf8");
     private final boolean isBlockingSelectMode = true;
+    private Selector selector = null;
+
+    /**
+     * 每个连接socketChannel 的状态表
+     */
+    private ConcurrentMap<SocketChannel, SocketChannelState> socketChannelStates = new ConcurrentHashMap<>();
 
     @Override
     public void listen(int port) {
 
-        Selector selector = null;
         ServerSocketChannel socketChannel = null;
         SelectionKey selectionKey = null;
         try {
@@ -90,7 +96,10 @@ public class MultiplexIOTcpServer implements TcpServer {
                     Iterator<SelectionKey> iterator = selectionKeys.iterator();
                     while (iterator.hasNext()) {
                         SelectionKey key = iterator.next();
-                        handSelectionKey(key, finalSelector);
+                        System.out.println("key is found,isValid:" + key.isValid());
+                        if (key.isValid()) {
+                            handSelectionKey(key);
+                        }
                         iterator.remove();
                     }
 
@@ -132,8 +141,10 @@ public class MultiplexIOTcpServer implements TcpServer {
                     Iterator<SelectionKey> iterator = selectionKeys.iterator();
                     while (iterator.hasNext()) {
                         SelectionKey key = iterator.next();
-                        if(key.isValid()) {
-                            handSelectionKey(key, finalSelector);
+                        System.out.println("key is found,isValid:" + key.isValid());
+
+                        if (key.isValid()) {
+                            handSelectionKey(key);
                         }
 
                         /**
@@ -212,8 +223,13 @@ public class MultiplexIOTcpServer implements TcpServer {
 
     }
 
+    @Override
+    public void sendMessage(SocketChannel socketChannel, ByteBuffer buffer) {
 
-    private void handSelectionKey(SelectionKey key, Selector selector) throws IOException {
+    }
+
+
+    private void handSelectionKey(SelectionKey key) throws IOException {
 
         if (key.isAcceptable()) {
 
@@ -227,8 +243,6 @@ public class MultiplexIOTcpServer implements TcpServer {
 
                 skt.configureBlocking(false);
 
-                // 为新的连接注册 【读】事件
-                skt.register(selector, SelectionKey.OP_READ);
 
                 final SocketChannel finalSkt = skt;
                 executorService.submit(new Runnable() {
@@ -244,6 +258,10 @@ public class MultiplexIOTcpServer implements TcpServer {
                     }
                 });
 
+                // 为新的连接注册 【读】事件
+                skt.register(selector, SelectionKey.OP_READ);
+
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -254,6 +272,7 @@ public class MultiplexIOTcpServer implements TcpServer {
 
         if (key.isConnectable()) {
             // 客户端成功连接服务端的事件
+            // 由于当前不是客户端，所以不会触发该事件
             System.out.println("is connectable");
         }
 
@@ -266,7 +285,20 @@ public class MultiplexIOTcpServer implements TcpServer {
             System.out.printf("channel info = remote address: %s , local address: %s", sktChannel.getRemoteAddress(), sktChannel.getLocalAddress());
             System.out.println();
 
-            executorService.submit(new ReceiveMessageRunner(sktChannel, 8));
+            SocketChannelState channelState = getChannelState(sktChannel);
+
+            // 如果该通道正在读数据,则退出
+            // 目的是在Level Triggered模式下，减少因为重复触发read事件所导致不断提交任务的结果
+            if (channelState != null && channelState == SocketChannelState.READING) {
+                System.out.println("channel is reading");
+                return;
+            }
+
+
+            setChanneState(sktChannel, SocketChannelState.READING);
+
+
+            executorService.submit(new ReceiveMessageRunner(this, sktChannel, 8));
 
             return;
         }
@@ -290,11 +322,44 @@ public class MultiplexIOTcpServer implements TcpServer {
     }
 
 
-    @Override
-    public void onRecevieMessage(Callback<Object, byte[]> callback) {
-
+    SocketChannelState getChannelState(SocketChannel channel) {
+        return socketChannelStates.get(channel);
     }
 
+    void setChanneState(SocketChannel channel, SocketChannelState state) {
+        this.socketChannelStates.put(channel, state);
+    }
+
+
+
+    /**
+     * socket通道状态
+     */
+    enum SocketChannelState {
+
+        UNCONNECTED(0),
+        CONNECTED(1),
+        READING(1 << 1),
+        WRITING(1 << 2),
+        CLOSING(1 << 3),
+        CLOSED(1 << 4);
+
+        AtomicInteger value = new AtomicInteger(-1);
+
+        SocketChannelState(int value) {
+            this.value.set(value);
+        }
+
+        public int getIntValue() {
+            return this.value.get();
+        }
+
+        public void setNewState(SocketChannelState newState) {
+
+            this.value.getAndSet(newState.value.intValue());
+        }
+
+    }
 
     /**
      * 接收信息Runner
@@ -303,34 +368,67 @@ public class MultiplexIOTcpServer implements TcpServer {
 
         private ByteBuffer buffer;
         private SocketChannel clientktSktChannel;
+        private MultiplexIOTcpServer server;
 
-        public ReceiveMessageRunner(SocketChannel clientSktChannel, int bufferSize) {
+        public ReceiveMessageRunner(MultiplexIOTcpServer server, SocketChannel clientSktChannel, int bufferSize) {
             this.buffer = ByteBuffer.allocate(bufferSize);
             this.clientktSktChannel = clientSktChannel;
+            this.server = server;
         }
 
         @Override
         public void run() {
+
+            synchronized (clientktSktChannel) {
+                server.setChanneState(clientktSktChannel, SocketChannelState.READING);
+            }
+
             try {
 
                 System.out.println("start read message...");
 
+
                 int read = -1;
                 StringBuilder builder = new StringBuilder();
+                buffer.clear();
                 while ((read = clientktSktChannel.read(buffer)) > 0) {
 
-                    builder.append(new String(buffer.array(), charset));
+                    byte[] bytes = new byte[read];
+                    buffer.flip();
+                    buffer.get(bytes, 0, read);
+
+                    builder.append(new String(bytes, charset));
                     buffer.clear();
                 }
 
-                if(read==-1) {
-                    System.out.println("disconnected");
-                }else{
-                    System.out.println(builder.toString());
+
+                String threadInfo = String.format("thread-id=%s, thread-name=%s", Thread.currentThread().getId(), Thread.currentThread().getName());
+
+                if (read == -1) {
+                    System.out.println("disconnected,current thread:" + threadInfo);
+                } else {
+
+                    System.out.println("thread info:" + threadInfo + "\n" + builder.toString());
                 }
+
+                /**
+                 * 读取完数据后，切换成准备读状态
+                 */
+                server.setChanneState(clientktSktChannel, SocketChannelState.CONNECTED);
+
+
             } catch (IOException e) {
+
+
+                try {
+                    clientktSktChannel.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             }
+
+
         }
     }
 
