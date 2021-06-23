@@ -52,6 +52,7 @@ public class Reactor implements Runnable {
                 // 将由Handler 通过调用selector.wakeup() 来唤醒
                 System.out.println("selector.select() ... ");
                 int count = selector.select();
+                // 如果由wakeup方法唤醒的话，可能count为0
                 System.out.println("key count:" + count);
 
 

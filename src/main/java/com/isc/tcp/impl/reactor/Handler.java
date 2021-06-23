@@ -22,16 +22,14 @@ public class Handler implements Runnable {
 
     final SocketChannel socket;
     final SelectionKey sk;
-    ByteBuffer readBuffer = ByteBuffer.allocate(4);
-    ByteBuffer writeBuffer = ByteBuffer.allocate(4);
-
 
     /**
-     * 已读数据的缓冲区
-     * 用于存储未读完的数据
-     */
-    ByteBuffer readDataBuffer = ByteBuffer.allocate(1024);
-    ByteBuffer sendDataBuffer = ByteBuffer.allocate(1024);
+     * 每个连接占据着两个 缓冲区，总共1M内存
+     **/
+
+    ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 512);
+    ByteBuffer writeBuffer = ByteBuffer.allocate(1024 * 512);
+
 
     static final int READING = 0, SENDING = 1;
 
@@ -51,7 +49,6 @@ public class Handler implements Runnable {
         System.out.println("handler number:" + handlerNumber);
 
 
-
         socket = c;
         c.configureBlocking(false);
 
@@ -65,12 +62,10 @@ public class Handler implements Runnable {
         sk.attach(this);
 
 
-        // Optionally try first read now
-        // 实例化时马上唤醒selector, 尝试读数据，因为大多数连接建立后都马上会有请求数据(触发OP_READ的事件)
-        changeToReadingState();
+        // 马上切换到读数据状态, 尝试读数据，因为大多数连接建立后都马上会有请求数据(触发OP_READ的事件)
+        changeToReadingState(true);
 
 
-        sel.wakeup();
     }
 
 
@@ -79,8 +74,7 @@ public class Handler implements Runnable {
      *
      * @return
      */
-    private byte[] bufferToBytes(ByteBuffer buffer) {
-        int len = buffer.position();
+    private byte[] bufferToBytes(ByteBuffer buffer,int len) {
         byte[] bytes = new byte[len];
         buffer.flip();
         buffer.get(bytes, 0, len);
@@ -99,18 +93,10 @@ public class Handler implements Runnable {
      */
     boolean readIsComplete() {
 
-        // 判断最后一个符号是否为分号,如果是则读完数据
-
-
-        int last = readDataBuffer.position();
-        byte lastChar = readDataBuffer.get(last - 1);
-        if (lastChar == (byte) ';') {
-
-            byte[] bytes = bufferToBytes(readDataBuffer);
-
-            String data = new String(bytes, charset);
-            System.out.println("receive data:\n" + data);
-
+        // 判断最后一个符号是否为换行符,如果是则读完数据
+        int last = readBuffer.position();
+        byte lastChar = readBuffer.get(last - 1);
+        if (lastChar == (byte) '\n') {
             return true;
         } else {
             return false;
@@ -119,12 +105,19 @@ public class Handler implements Runnable {
 
 
     /**
-     * 参考inputIsComplete的注释
+     * 参考readIsComplete的注释
      *
      * @return
      */
-    boolean outputIsComplete() {
-        return false;
+    boolean sendIsComplete() {
+        //判断writeBuffer最后一个符号是否为换行符
+        int last = writeBuffer.limit();
+        byte lastChar = writeBuffer.get(last - 1);
+        if (lastChar == (byte) '\n') {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -133,38 +126,50 @@ public class Handler implements Runnable {
      */
     void processReadComplete() {
 
-
-
         // 读到完整数据后自动回复, 回复内容为
         // "收到你的请求数据: xxx"
 
 
-        // 将要发送的数据写入writeBuffer
+        /** 将要发送的数据写入writeBuffer **/
 
-        String content = "收到你的请求数据:" + new String(bufferToBytes(readDataBuffer), charset);
-        sendDataBuffer.clear();
-        sendDataBuffer.put(content.getBytes());
+        // 响应的数据中也是以换行符号,所以就不去除换行符了,因为原来读的数据有换行符
+        // readBuffer.position(readBuffer.position() - 1);
 
-        // 切换状态，下次触发事件时调用run方法会触发write逻辑
-        changeToSendingState();
+        String content = "收到你的请求数据:" + new String(bufferToBytes(readBuffer,readBuffer.position()), charset);
+
+        writeBuffer.put(content.getBytes());
+        // 锁定有效长度,下次读取实际有效数据长度时可通过limit()方法返回
+        writeBuffer.limit(writeBuffer.position());
 
     }
 
     void processSendComplete() {
-        //发送完毕后，切换读的状态,监听读的数据
-        changeToReadingState();
+
     }
 
-    void changeToReadingState(){
+    void changeToReadingState(boolean clearBuffer) {
+
+        // Optionally try first read now
+        // 马上唤醒selector, 尝试读数据
+
         state = READING;
-        readDataBuffer.clear();
+        if (clearBuffer) {
+            readBuffer.clear();
+        }
         sk.interestOps(SelectionKey.OP_READ);
+
+        // 因为已经监听READ事件，唤醒,可以直接获取到事件?
+        sk.selector().wakeup();
     }
 
-    void changeToSendingState(){
+    void changeToSendingState(boolean clearBuffer) {
         state = SENDING;
-        sendDataBuffer.clear();
+        if (clearBuffer) {
+            writeBuffer.clear();
+        }
         sk.interestOps(SelectionKey.OP_WRITE);
+
+        sk.selector().wakeup();
     }
 
 
@@ -189,32 +194,27 @@ public class Handler implements Runnable {
     }
 
     private void send() throws IOException {
-        socket.write(sendDataBuffer);
+        writeBuffer.rewind();
+        socket.write(writeBuffer);
 
-        processSendComplete();
+        if(sendIsComplete()) {
+            processSendComplete();
+            // 切换状态, 下次触发事件时调用run方法会触发read逻辑
+            changeToReadingState(true);
+        }
+
     }
 
     private void read() throws IOException {
 
+        this.socket.read(readBuffer);
 
-        readBuffer.clear();
-        int count = this.socket.read(readBuffer);
-        readBuffer.flip();
+        if (readIsComplete()) {
 
-        byte nextByte;
-        int index = 0;
-        // 判断是否收到一条完整的数据, 已分号结束
-        while (index < count) {
-            nextByte = readBuffer.get(index);
-            readDataBuffer.put(nextByte);
-            if (nextByte == ';') {
-                processReadComplete();
-                //忽略分号后面的数据
-                return;
-            }
-            index++;
+            // 切换状态，下次触发事件时调用run方法会触发write逻辑
+            changeToSendingState(true);
+            processReadComplete();
         }
-
 
     }
 
