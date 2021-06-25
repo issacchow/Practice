@@ -7,23 +7,24 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
  * 反应器(单工作者线程模式)
- *
+ * <p>
  * 要点:
  * 1. 负责分发事件，每个事件都绑定一个Handler,由本类对象的单线程执行Handler.
  * 2. 每个请求数据，会读缓冲区(参考Handler::readBuffer变量)的大小而切割成多个事件
- *    换句话，每次事件可能只读取了请求数据的一部分，需要多次触发事件才能把数据读完整。
+ * 换句话，每次事件可能只读取了请求数据的一部分，需要多次触发事件才能把数据读完整。
  */
 public class Reactor implements Runnable {
 
     private Selector selector;
     private ServerSocketChannel serverSocketChannel;
 
-    public Reactor(int port, IRequestHandler requestHandler) throws IOException {
+    public Reactor(int port, IRequestHandler requestHandler, Class<? extends AbstractHandler> handlerType) throws IOException {
 
         // 从默认配置中获取selector
         // this.selector = SelectorProvider.provider().openSelector();
@@ -35,7 +36,7 @@ public class Reactor implements Runnable {
         SelectionKey key = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
         //实例化处理器并附加到key 上
-        Acceptor acceptor = new Acceptor(selector, serverSocketChannel,requestHandler);
+        Acceptor acceptor = new Acceptor(selector, serverSocketChannel, requestHandler, handlerType);
         key.attach(acceptor);
 
 
@@ -52,11 +53,13 @@ public class Reactor implements Runnable {
 
                 // 阻塞等待事件
                 // 将由Handler 通过调用selector.wakeup() 来唤醒
-                System.out.println("selector.select() ... ");
+                System.out.println(new Date().toLocaleString() + "   selector.select() ... ");
                 int count = selector.select();
+                if (count == 0) {
+                    continue;
+                }
                 // 如果由wakeup方法唤醒的话，可能count为0
-                System.out.println("key count:" + count);
-
+//                System.out.println(new Date().toLocaleString() +  "   key count:" + count);
 
 
                 Set<SelectionKey> keys = selector.selectedKeys();
@@ -68,7 +71,6 @@ public class Reactor implements Runnable {
                     iterator.remove();
                     dispatch(key);
                 }
-
 
 
             } catch (IOException e) {

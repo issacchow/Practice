@@ -1,10 +1,13 @@
 package com.isc;
 
 import com.isc.tcp.IRequestHandler;
+import com.isc.tcp.ITcpServer;
 import com.isc.tcp.impl.reactor.ReactorTcpServer;
+import com.isc.tcp.impl.reactor.ThreadPoolHandler;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
@@ -12,12 +15,22 @@ public class Main {
     public static void main(String[] args) {
 
 
-//       ITcpServer server = new BIOTcpServer();
-//       ITcpServer server = new MultiplexIOTcpServer();
-        ReactorTcpServer server = new ReactorTcpServer();
+       //ITcpServer server = new BIOTcpServer();
+       //ITcpServer server = new MultiplexIOTcpServer();
 
 
-        server.listen(7777, new IRequestHandler() {
+        /** Reactor Server **/
+
+        // 单线程Reactor
+        //ITcpServer server = new ReactorTcpServer(SimpleHandler.class);
+        // 多线程数据处理Reactor
+        ITcpServer server = new ReactorTcpServer(ThreadPoolHandler.class);
+
+
+        /**
+         * 请求处理器
+         */
+        IRequestHandler requestHandler = new IRequestHandler() {
 
             /**
              * 处理过程的睡眠次数，每次睡眠1000ms
@@ -36,7 +49,7 @@ public class Main {
                     System.out.println("start processing");
                     int i = PROCESS_SLEEP_TIMES;
                     while (i-- > 0) {
-                        System.out.println("processing...");
+                        System.out.println(Thread.currentThread().getName() + "  processing...");
                         Thread.sleep(1000);
                     }
                     System.out.println("process complete");
@@ -60,13 +73,18 @@ public class Main {
                 //String content = "收到你的请求数据:" + new String(bufferToBytes(readBuffer, readBuffer.position()), charset);
 
 
-                String content = total + "\n";
+                String content = "[" + new Date().toLocaleString() + "] response:" + total + "\n";
 
                 writeBuffer.put(content.getBytes());
                 // 锁定有效长度,下次读取实际有效数据长度时可通过limit()方法返回
                 writeBuffer.flip();
             }
-        });
+        };
+
+
+        server.listen(7777, requestHandler);
+
+
     }
 
 

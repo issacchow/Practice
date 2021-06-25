@@ -53,7 +53,7 @@ public abstract class AbstractHandler implements Runnable {
      * 请求处理器
      * 当收到一条完整数据时触发的回调
      */
-    private IRequestHandler requestHandler;
+    IRequestHandler requestHandler;
 
     /**
      * 默认状态为读
@@ -71,7 +71,7 @@ public abstract class AbstractHandler implements Runnable {
     AbstractHandler(Selector sel, SocketChannel c, int readBufferSize, int writeBufferSize, IRequestHandler requestHandler) throws IOException {
 
         this.handlerNumber = handlerCount.incrementAndGet();
-        System.out.println("handler number:" + handlerNumber);
+        System.out.println("   ***      new handler number:" + handlerNumber + "     ***    ");
 
         this.requestHandler = requestHandler;
 
@@ -130,11 +130,15 @@ public abstract class AbstractHandler implements Runnable {
     /**
      * 处理一条完整读取完的数据
      * 这条数据已经完整了
+     *
+     * 在准备好要写的数据,即writerBuffer后，需要切换成sending状态
      */
     protected void processReadComplete() {
         if (this.requestHandler != null) {
             this.requestHandler.handle(socket, readBuffer, writeBuffer);
         }
+
+        sendingState(false);
     }
 
 
@@ -147,6 +151,7 @@ public abstract class AbstractHandler implements Runnable {
      */
     protected void readingState(boolean clearBuffer) {
 
+        System.out.println("handler " + handlerNumber + " 【READING】 ");
         // Optionally try first read now
         // 马上唤醒selector, 尝试读数据
 
@@ -164,8 +169,14 @@ public abstract class AbstractHandler implements Runnable {
      * 变更处理中状态
      */
     protected void processingState() {
+
+        System.out.println("handler " + handlerNumber + "  【PROCESSING】 ");
+
         state = PROCESSING;
         writeBuffer.clear();
+        //不关注任何事件
+        sk.interestOps(0);
+        sk.selector().wakeup();
     }
 
     /**
@@ -174,12 +185,12 @@ public abstract class AbstractHandler implements Runnable {
      * @param clearBuffer
      */
     protected void sendingState(boolean clearBuffer) {
+        System.out.println("handler " + handlerNumber + " 【SENDING】 ");
         state = SENDING;
         if (clearBuffer) {
             writeBuffer.clear();
         }
         sk.interestOps(SelectionKey.OP_WRITE);
-
         sk.selector().wakeup();
     }
 
@@ -196,30 +207,38 @@ public abstract class AbstractHandler implements Runnable {
             return;
         }
 
+        System.out.println();
+        try {
+            System.out.printf("run for socket:%s",socket.getRemoteAddress());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println();
+
         if (state == READING) {
             try {
-                System.out.println("try to run under READING...");
+                System.out.println(" handler number " + this.handlerNumber + "    try to run under READING...");
                 read();
-                System.out.println("read complete");
+                System.out.println(" handler number " + this.handlerNumber +"  read complete");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (state == SENDING) {
             try {
-                System.out.println("try to run under SENDING...");
+                System.out.println(" handler number " + this.handlerNumber + "    try to run under SENDING...");
                 send();
-                System.out.println("send complete");
+                System.out.println(" handler number " + this.handlerNumber + "    send complete");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (state == PROCESSING) {
             // 线程池正在处理中
             // 不执行操作，等待处理完成
-            System.out.println("wait for processing");
+            System.out.println(" handler number " + this.handlerNumber +" wait for processing");
         }
     }
 
-    private void send() throws IOException {
+    protected void send() throws IOException {
 
         socket.write(writeBuffer);
         writeBuffer.flip();
@@ -232,7 +251,7 @@ public abstract class AbstractHandler implements Runnable {
 
     }
 
-    private void read() throws IOException {
+    protected void read() throws IOException {
 
         int count = this.socket.read(readBuffer);
         if (count <= 0) {
@@ -246,9 +265,9 @@ public abstract class AbstractHandler implements Runnable {
             // 切换成处理数据状态
             processingState();
 
+            // 数据处理
             processReadComplete();
 
-            sendingState(false);
 
         }
 

@@ -7,7 +7,10 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -35,7 +38,7 @@ public class ReactorTcpServerTest {
     public void sendRequestMultiThreads() throws IOException, InterruptedException {
 
 
-        int targetNumber = 20;
+        int targetNumber = 50;
         CountDownLatch latch = new CountDownLatch(targetNumber);
 
         for (int i = 0; i < targetNumber; i++) {
@@ -57,6 +60,7 @@ public class ReactorTcpServerTest {
                         buffer.flip();
                         client.write(buffer);
 
+                        System.out.println(Thread.currentThread().getName()+" wait for response");
                         // 读取当前服务器累计数值
                         buffer.clear();
                         int count = client.read(buffer);
@@ -66,7 +70,7 @@ public class ReactorTcpServerTest {
                         buffer.flip();
                         buffer.get(bytes, 0, count);
                         content = new String(bytes,charset);
-                        System.out.println("收到服务响应:" + content);
+                        System.out.println(Thread.currentThread().getName()+" 收到服务响应:" + content);
 
 
                     } catch (IOException e) {
@@ -76,7 +80,7 @@ public class ReactorTcpServerTest {
                     }
                 }
             });
-            t.run();
+            t.start();
         }
 
 
@@ -84,5 +88,34 @@ public class ReactorTcpServerTest {
 
     }
 
+
+    @Test
+    public void testThread(){
+        Executor executor = Executors.newFixedThreadPool(10);
+        for (int i=0;i<50;i++){
+           executor.execute(new Runnable() {
+               @Override
+               public void run() {
+                   try {
+                       System.out.println(Thread.currentThread().getName() + " start sleep ");
+                       int i=5;
+                       while(i++>0) {
+                           System.out.println( new Date().toLocaleString() + "   " +Thread.currentThread().getName() + " sleeping... ");
+                           Thread.sleep(1000);
+                       }
+                       System.out.println(Thread.currentThread().getName() + " end sleep ");
+                   } catch (InterruptedException e) {
+                       e.printStackTrace();
+                   }
+               }
+           });
+        }
+
+
+        while(true){
+            Thread.yield();
+        }
+
+    }
 
 }
