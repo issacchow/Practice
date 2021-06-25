@@ -1,5 +1,7 @@
 package com.isc.tcp.impl.reactor;
 
+import com.isc.tcp.IRequestHandler;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -21,7 +23,7 @@ public class Reactor implements Runnable {
     private Selector selector;
     private ServerSocketChannel serverSocketChannel;
 
-    public Reactor(int port) throws IOException {
+    public Reactor(int port, IRequestHandler requestHandler) throws IOException {
 
         // 从默认配置中获取selector
         // this.selector = SelectorProvider.provider().openSelector();
@@ -33,7 +35,7 @@ public class Reactor implements Runnable {
         SelectionKey key = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
         //实例化处理器并附加到key 上
-        Acceptor acceptor = new Acceptor(selector, serverSocketChannel);
+        Acceptor acceptor = new Acceptor(selector, serverSocketChannel,requestHandler);
         key.attach(acceptor);
 
 

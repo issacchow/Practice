@@ -7,10 +7,10 @@ public abstract class AbstractTcpServer implements ITcpServer {
 
 
 
-    private IReceiveCallback callback;
+    private IRequestHandler callback;
 
     @Override
-    public void onRecevieMessage(IReceiveCallback callback) {
+    public void onRecevieMessage(IRequestHandler callback) {
         this.callback = callback;
     }
 

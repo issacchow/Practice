@@ -24,7 +24,7 @@ public class BIOTcpServer extends AbstractTcpServer {
 
 
     @Override
-    public void listen(int port) {
+    public void listen(int port, IRequestHandler requestHandler) {
         try {
             ServerSocket serverSocket = new ServerSocket(7777);
 
@@ -37,7 +37,7 @@ public class BIOTcpServer extends AbstractTcpServer {
                         public void run() {
                             try {
 
-                                while(true) {
+                                while (true) {
 
                                     System.out.println("wait for new connection");
                                     Socket conn = serverSocket.accept();
@@ -59,10 +59,10 @@ public class BIOTcpServer extends AbstractTcpServer {
                                                 System.out.println("try to read data in blocking mode");
                                                 inputStream = conn.getInputStream();
 
-                                                while(true) {
+                                                while (true) {
 
                                                     int read = inputStream.read(buffer);
-                                                    if(read<=0){
+                                                    if (read <= 0) {
                                                         continue;
                                                     }
 
@@ -91,13 +91,8 @@ public class BIOTcpServer extends AbstractTcpServer {
             );
 
 
-
-
-
-
             acceptThread.start();
             acceptThread.join();
-
 
 
         } catch (IOException e) {
@@ -107,8 +102,6 @@ public class BIOTcpServer extends AbstractTcpServer {
             e.printStackTrace();
         }
     }
-
-
 
 
 }

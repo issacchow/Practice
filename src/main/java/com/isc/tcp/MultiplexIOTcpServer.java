@@ -38,7 +38,7 @@ public class MultiplexIOTcpServer extends AbstractTcpServer {
     private ConcurrentMap<SocketChannel, SocketChannelState> socketChannelStates = new ConcurrentHashMap<>();
 
     @Override
-    public void listen(int port) {
+    public void listen(int port, IRequestHandler requestHandler) {
 
         ServerSocketChannel socketChannel = null;
         SelectionKey selectionKey = null;
@@ -329,7 +329,6 @@ public class MultiplexIOTcpServer extends AbstractTcpServer {
     void setChanneState(SocketChannel channel, SocketChannelState state) {
         this.socketChannelStates.put(channel, state);
     }
-
 
 
     /**

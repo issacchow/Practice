@@ -25,7 +25,7 @@ public class ReactorTcpServerTest {
      *
      *
      * 结论: 从测试过程可以看出，
-     * 服务端使用了Reactor 单线程模型, 解决了BIO连接暴增的问题。
+     * 服务端使用了Reactor 单线程模型(使用 SimpleHandler), 解决了BIO连接暴增的问题。
      * 但因为用的是单线程去处理数据，如果数据处理慢，则降低吞吐效率
      *
      *

@@ -225,7 +225,7 @@ public class NioTcpServer extends AbstractTcpServer {
     }
 
     @Override
-    public void listen(int port) {
+    public void listen(int port, IRequestHandler requestHandler) {
         try {
             start("127.0.0.1", port);
         } catch (IOException e) {
