@@ -27,15 +27,17 @@ public class SimpleHandler extends AbstractHandler {
     @Override
     boolean readIsComplete() {
 
-        // 判断最后一个符号是否为换行符,如果是则读完数据
-        int last = readBuffer.position();
-        if (last == 0) {
+        // 判断是否有换行符,如果有则找出有效数据
+        if (readBuffer.position() == 0) {
             return false;
         }
-        byte lastChar = readBuffer.get(last - 1);
-        if (lastChar == (byte) '\n') {
-            // 锁定当前有效数据段,进入读取状态
-            readBuffer.flip();
+
+        byte[] bytes = bufferToBytes(readBuffer, readBuffer.position());
+
+        String data = new String(bytes);
+        int index = data.indexOf("\n");
+
+        if (index > 0) {
             return true;
         } else {
             return false;
