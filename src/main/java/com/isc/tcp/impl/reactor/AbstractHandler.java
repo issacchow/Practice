@@ -130,7 +130,7 @@ public abstract class AbstractHandler implements Runnable {
     /**
      * 处理一条完整读取完的数据
      * 这条数据已经完整了
-     *
+     * <p>
      * 在准备好要写的数据,即writerBuffer后，需要切换成sending状态
      */
     protected void processReadComplete() {
@@ -209,7 +209,7 @@ public abstract class AbstractHandler implements Runnable {
 
         System.out.println();
         try {
-            System.out.printf("run for socket:%s",socket.getRemoteAddress());
+            System.out.printf("run for socket:%s", socket.getRemoteAddress());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -219,7 +219,7 @@ public abstract class AbstractHandler implements Runnable {
             try {
                 System.out.println(" handler number " + this.handlerNumber + "    try to run under READING...");
                 read();
-                System.out.println(" handler number " + this.handlerNumber +"  read complete");
+                System.out.println(" handler number " + this.handlerNumber + "  read complete");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -234,7 +234,7 @@ public abstract class AbstractHandler implements Runnable {
         } else if (state == PROCESSING) {
             // 线程池正在处理中
             // 不执行操作，等待处理完成
-            System.out.println(" handler number " + this.handlerNumber +" wait for processing");
+            System.out.println(" handler number " + this.handlerNumber + " wait for processing");
         }
     }
 
@@ -254,13 +254,25 @@ public abstract class AbstractHandler implements Runnable {
     protected void read() throws IOException {
 
         int count = this.socket.read(readBuffer);
-        if (count <= 0) {
-            System.out.println("no data to read,read count:" + count);
+        if (count < 0) {
+            System.out.println("client request disconnect");
             sk.cancel();
             socket.close();
+            return;
         }
 
+        if (count == 0) {
+            System.out.println("no data to read,read count:" + count);
+            return;
+        }
+
+
+        System.out.println("found data length:" + count);
+
+
         if (readIsComplete()) {
+
+            System.out.println("reading is complete");
 
             // 切换成处理数据状态
             processingState();
@@ -268,7 +280,8 @@ public abstract class AbstractHandler implements Runnable {
             // 数据处理
             processReadComplete();
 
-
+        } else {
+            System.out.println("reading is not complete, keep reading...");
         }
 
     }
