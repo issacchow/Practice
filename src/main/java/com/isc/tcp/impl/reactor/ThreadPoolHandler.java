@@ -18,6 +18,23 @@ import java.util.concurrent.Executor;
  * 3. 写数据: 将响应数据发送给客户端
  * <p>
  * 其中，只有处理数据是交由线程池处理,原来 {@link SimpleHandler} 只是单线程执行
+ *
+ * 存在线程安全问题:
+ * 因为writeBuffer是共享的, 对于同一个连接的多个并行数据处理任务的情况,存在对writeBuffer的竞争， 当其中一个任务被执行完毕后需要写数据，这个时候就切换到写的状态，
+ * 但同时有可能其他任务在执行，并且往writeBuffer里写入待发送数据,这样就存在冲突了。
+ *
+ * 存在问题的并行时序
+ * 【时间偏移】       【Reactor线程】              【Worker1】          【Worker2】
+ * ----------------------------------------------------------------------------------------
+ * 100ms             Read
+ * 110ms             Read
+ * 120ms                                          writeBuffer.put()
+ *
+ * 130ms             socket.send(writeBuffer)
+ * 130ms                                                               writeBuffer.put()
+ *
+ *
+ * 第130ms 发生两条线程并行操作writeBuffer
  */
 public class ThreadPoolHandler extends SimpleHandler {
 
@@ -77,6 +94,8 @@ public class ThreadPoolHandler extends SimpleHandler {
             this.executor.execute(new Runnable() {
                 @Override
                 public void run() {
+
+                    // 这里存在线程安全问题,多条线程同时向writeBuffer写入数据
                     requestHandler.handle(socket, readBuffer, writeBuffer);
                     sendingState(false);
                 }
