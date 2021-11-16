@@ -1,0 +1,155 @@
+@startuml
+
+
+
+
+
+
+
+class OrderFSM<订单有限状态机> {
+   - state = new InitState();
+   -- 触发事件，从而切换新状态 --
+   + triggerEvent(event:OrderEvent):void
+   -- 获取当前状态 --
+   + getCurrentState():OrderState
+   -- 注册状态变更动作 --
+   + registerAction(action:OrderStateAction):void
+
+   -- 修改状态 --
+   - changeState(newState:OrderState);
+}
+
+interface OrderStateAction <订单状态行为> {
+
+
+  + beforeChangeState(...) : void
+
+
+  + afterChangeState(...) : void
+
+}
+
+interface EventProcessor<事件处理器>{
+  process(event:OrderEvent)
+}
+
+package "订单事件" {
+
+    interface OrderEvent<订单事件> {
+       + getName() : String
+    }
+
+    OrderFSM ..> OrderEvent : 依赖
+
+    package "InitState(初始化)" {
+        OrderEvent <|-up- NewOrderEvent
+    }
+
+    package "CreatedState(订单创建)" {
+        OrderEvent <|-up- UserCancelOrderEvent
+        OrderEvent <|-up- CropCancelOrderEvent
+        OrderEvent <|-up- CreatePaymentOrderEvent
+    }
+
+    package "OnCancelState(订单取消中)" {
+        OrderEvent <|-down- ProcessCancelOrderEvent
+    }
+
+    package "ReadyToPayState(待支付)" {
+        OrderEvent <|-down- PaymentCompleteEvent
+        OrderEvent <|-down- PaymentTimeoutEvent
+    }
+
+    package "PaymentCompleteState(已支付)" {
+        OrderEvent <|-down- AuditSuccessEvent
+        OrderEvent <|-down- AuditFailEvent
+    }
+
+    package "ReadyToDeliveryState(待发货)" {
+        OrderEvent <|-up- CancelDeliveryEvent
+        OrderEvent <|-up- StartDeliveryEvent
+    }
+
+
+    class NewOrderEvent<新订单事件>{}
+    class UserCancelOrderEvent<用户取消订单事件>{}
+    class CropCancelOrderEvent<商家取消订单事件>{}
+    class ProcessCancelOrderEvent<处理取消订单事件>{}
+
+    class CreatePaymentOrderEvent<创建支付单事件>{}
+
+    class PaymentCompleteEvent<支付完成事件>{}
+    class PaymentTimeoutEvent<支付超时事件>{}
+    class AuditSuccessEvent<订单审核成功>{}
+    class AuditFailEvent<订单审核失败>{}
+
+
+
+    class CancelDeliveryEvent
+    class StartDeliveryEvent
+
+}
+
+
+package "订单状态" {
+
+
+    interface Observable<观测者>
+
+    OrderState -> Observable
+
+    interface OrderState<订单状态> {
+      .. 获取状态名称 ..
+      getName():String
+
+      .. (监听)注册事件操作 ..
+      registerEvent(event:OrderEvent, handle:EventProcessor)
+      .. 次态路由器列表 ..
+      getNextStateRouters(): List<NextStateRouter>
+    }
+
+
+
+
+    OrderState o---OrderFSM
+    OrderState <|-up- InitState #green
+    OrderState <|-up- CreatedState
+    OrderState <|-up- OnCancelState
+    OrderState <|-up- ReadyToPayState
+    OrderState <|-up- PaymentCompleteState
+    OrderState <|-up- ReadyToDeliveryState
+    OrderState <|-up- DeliveryCompleteState
+
+
+
+
+
+
+    class InitState<初始化状态(订单待创建)>
+    class CreatedState<订单创建>
+    class OnCancelState<取消中>
+    class ReadyToPayState<待支付>
+    class PaymentCompleteState<支付完成>
+    class ReadyToDeliveryState<待发货>
+    class DeliveryCompleteState<已发货>
+
+
+    interface NextStateRouter<次态路由器> {
+       .. 构造函数 ..
+       + NextStateRouter(event:OrderEvent,nextState:OrderState)
+       .. public ..
+       + getBindingEvent():OrderEvent
+       + getNextState():OrderState
+       .. 事件触发 ..
+       处理事件后，切换到新的状态
+       + onEvent(event:OrderEvent);
+
+    }
+
+}
+
+
+
+
+
+@enduml

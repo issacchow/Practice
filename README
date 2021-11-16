@@ -1,1 +1,6 @@
-个人练习项目，不同的练习项目使用不同的分支
+## 订单有限状态机
+> 抽象了每个订单状态下的不同行为
+
+> 注意: 每增加一个事件(OrderEvent子类)都需要在OrderStateAdapter里增加分发的处理
+
+> 注意2: 每增加一个状态都需要再OrderStateProvider里注册实例,以及在OrderStateKey增加对应的Key
