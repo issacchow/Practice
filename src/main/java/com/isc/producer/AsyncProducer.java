@@ -1,61 +1,20 @@
-package com.isc;
+package com.isc.producer;
 
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.CountDownLatch2;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
-import org.apache.rocketmq.remoting.exception.RemotingException;
 
-import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * rocketmq 相关的api 测试使用
- * 官方样例:
- * <p>
- * https://github.com/apache/rocketmq/blob/develop/docs/cn/RocketMQ_Example.md#1producer%E7%AB%AF%E5%8F%91%E9%80%81%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF
- * </p>
+ * 异步消息通常用在对响应时间敏感的业务场景，即发送端不能容忍长时间地等待Broker的响应。
  */
-public class Main {
-
-    private SendResult result;
-
-    public static void main(String[] args) {
-
-    }
-
-    /**
-     * 同步发送消息（保证消息可靠性)
-     */
-    public static void produceSyncMessage() throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-
-        DefaultMQProducer producer = new DefaultMQProducer("my-producer-group");
-        producer.setNamesrvAddr("127.0.0.1:9876");
-
-        try {
-            producer.start();
-        } catch (MQClientException e) {
-            e.printStackTrace();
-        }
-
-        byte[] data = "Hello World".getBytes();
-        for(int i=0;i<100;i++) {
-            SendResult result = producer.send(
-                    new Message("helloworld", "mytag1,mytag2", "mykey1,mykey2", data)
-            );
-        }
-
-
-        producer.shutdown();
-
-    }
-
-    public static void produceAsyncMessage() throws InterruptedException, RemotingException, MQClientException, MQBrokerException, UnsupportedEncodingException {
-
+@SuppressWarnings("all")
+public class AsyncProducer {
+    public static void main(String[] args) throws Exception {
         // 实例化消息生产者Producer
         DefaultMQProducer producer = new DefaultMQProducer("please_rename_unique_group_name");
         // 设置NameServer的地址
@@ -94,8 +53,5 @@ public class Main {
         countDownLatch.await(5, TimeUnit.SECONDS);
         // 如果不再发送消息，关闭Producer实例。
         producer.shutdown();
-
     }
-
-
 }
