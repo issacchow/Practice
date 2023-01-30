@@ -46,7 +46,7 @@ public class Main {
 
         /** Acceptor  **/
         NioSocketAcceptor acceptor = new NioSocketAcceptor(
-                acceptorExecutor,
+//                acceptorExecutor,
                 new SimpleIoProcessorPool<>(NioProcessor.class, Executors.newCachedThreadPool())
         );
 
@@ -62,7 +62,7 @@ public class Main {
 
         // 监听
 
-        acceptor.bind(new InetSocketAddress("127.0.0.1", 9999));
+        acceptor.bind(new InetSocketAddress(9999));
 
 
         System.out.println("start to listen on 9999...");
@@ -84,16 +84,41 @@ public class Main {
                 }
 
                 // 忽略回车
-                if("\n".compareTo(str2)==0 || str2.length()==0){
+                if ("\n".compareTo(str2) == 0 || str2.length() == 0) {
                     continue;
                 }
 
-                if(str2.startsWith("set sleep ")){
+                if (str2.startsWith("set sleep ")) {
                     String[] s = str2.split(" ");
                     int sleep = Integer.valueOf(s[2]);
                     handler.setSleep(sleep);
                     continue;
                 }
+
+
+
+                if (str2.compareToIgnoreCase("recmsg=true") == 0) {
+                    handler.setShowRecMsgLog(true);
+                    continue;
+                }
+                if (str2.compareToIgnoreCase("recmsg=false") == 0) {
+                    handler.setShowRecMsgLog(false);
+                    continue;
+                }
+
+
+
+                if (str2.compareToIgnoreCase("sentmsg=true") == 0) {
+                    handler.setShowSentMsgLog(true);
+                    continue;
+                }
+                if (str2.compareToIgnoreCase("sentmsg=false") == 0) {
+                    handler.setShowSentMsgLog(false);
+                    continue;
+                }
+
+
+
 
                 if (currentSession != null) {
                     MyMessage msg = new MyMessage(str2);

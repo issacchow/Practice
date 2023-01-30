@@ -14,7 +14,7 @@ public class PlainTextDecoder extends CumulativeProtocolDecoder {
 
     @Override
     protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) throws Exception {
-        System.out.printf("\ndecode in buffer,size:%s",1);
+//        System.out.printf("\ndecode in buffer,size:%s",1);
         int size = in.limit();
         byte[] dst = new byte[size];
         in.get(dst);

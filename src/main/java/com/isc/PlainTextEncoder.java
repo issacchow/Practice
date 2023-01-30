@@ -12,7 +12,7 @@ public class PlainTextEncoder extends ProtocolEncoderAdapter {
 
     @Override
     public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-        System.out.printf("\nencode message:%s",message);
+//        System.out.printf("\nencode message:%s",message);
         MyMessage msg = (MyMessage)message;
         byte[] data = msg.getContent().getBytes();
         IoBuffer buffer = IoBuffer.allocate(data.length);
